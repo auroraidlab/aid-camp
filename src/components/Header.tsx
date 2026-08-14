@@ -1,6 +1,6 @@
 import React from 'react';
 import { ViewTab, InstagramProfile } from '../types';
-import { BookOpen, BarChart3, PlusCircle, Instagram, Github } from 'lucide-react';
+import { BookOpen, BarChart3, PlusCircle, Instagram } from 'lucide-react';
 
 interface HeaderProps {
   currentTab: ViewTab;
@@ -47,18 +47,6 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Navigation & Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* GitHub Repository Link */}
-          <a
-            href="https://github.com/shyghoststella/aid-camp"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E5E2DD] bg-[#F9F8F6] hover:bg-[#F0EFED] hover:border-[#1A1A1A] text-xs font-medium text-[#1A1A1A]/80 hover:text-[#1A1A1A] transition-all shadow-xs"
-            title="GitHub 저장소 바로가기 (shyghoststella/aid-camp)"
-          >
-            <Github className="w-3.5 h-3.5" />
-            <span className="font-mono text-[11px] font-semibold">GitHub</span>
-          </a>
-
           {/* Instagram Account Connection Chip */}
           <button
             onClick={onOpenInstagramModal}

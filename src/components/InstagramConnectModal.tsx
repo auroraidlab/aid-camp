@@ -13,8 +13,7 @@ import {
   MessageSquare,
   Share2,
   Camera,
-  Upload,
-  Github
+  Upload
 } from 'lucide-react';
 import { InstagramProfile } from '../types';
 
@@ -326,25 +325,14 @@ export const InstagramConnectModal: React.FC<InstagramConnectModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#E5E2DD] bg-white flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleToggleConnection}
-              className="text-xs font-semibold text-[#1A1A1A]/50 hover:text-red-600 transition-colors"
-            >
-              {profile.isConnected ? '연동 일시 해제' : '다시 연동하기'}
-            </button>
-            <a
-              href="https://github.com/shyghoststella/aid-camp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1 text-[11px] text-[#1A1A1A]/60 hover:text-[#1A1A1A] transition-colors"
-            >
-              <Github className="w-3 h-3" />
-              <span>GitHub (shyghoststella/aid-camp)</span>
-            </a>
-          </div>
+        <div className="p-4 border-t border-[#E5E2DD] bg-white flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleToggleConnection}
+            className="text-xs font-semibold text-[#1A1A1A]/50 hover:text-red-600 transition-colors"
+          >
+            {profile.isConnected ? '연동 일시 해제' : '다시 연동하기'}
+          </button>
 
           <button
             onClick={onClose}

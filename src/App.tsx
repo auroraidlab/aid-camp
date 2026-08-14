@@ -26,7 +26,7 @@ import { InstagramConnectModal } from './components/InstagramConnectModal';
 import { PhotoManagerModal } from './components/PhotoManagerModal';
 import { InstagramPostImporterModal } from './components/InstagramPostImporterModal';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, CheckCircle2, AlertTriangle, Github, ExternalLink } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export default function App() {
   const [records, setRecords] = useState<WalkRecord[]>([]);
@@ -473,22 +473,13 @@ export default function App() {
 
       {/* Subtle Footer */}
       <footer className="border-t border-[#E5E2DD] py-8 text-center text-xs text-[#1A1A1A]/40 bg-white">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="font-serif-kr text-[#1A1A1A]/70">
             산책의 시선 • 개인 공간 영감 & Instagram Story 아카이브
           </p>
-          <div className="flex items-center gap-4 text-[11px] text-[#1A1A1A]/60 font-mono">
-            <a
-              href="https://github.com/shyghoststella/aid-camp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-[#1A1A1A] transition-colors py-1 px-2.5 rounded-full bg-[#F0EFED] hover:bg-[#E5E2DD]"
-            >
-              <Github className="w-3.5 h-3.5" />
-              <span>shyghoststella/aid-camp</span>
-              <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-            </a>
-          </div>
+          <p className="text-[11px] text-[#1A1A1A]/40 font-mono tracking-tight">
+            Everyday Walk, Spatial Analysis & Visual Dialogue
+          </p>
         </div>
       </footer>
 
