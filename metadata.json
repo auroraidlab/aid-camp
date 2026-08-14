@@ -1,0 +1,6 @@
+{
+  "name": "산책의 시선",
+  "description": "매일 산책하며 발견한 공간의 영감을 사진과 짧은 메모로 기록하면, AI가 공간적 의미를 해석하고 인스타그램 스토리용 비주얼 콘텐츠로 만들어주며, 사람들의 반응까지 함께 축적해주는 개인 영감 아카이브 웹앱",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
