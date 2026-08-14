@@ -1,6 +1,6 @@
 import React from 'react';
 import { ViewTab, InstagramProfile } from '../types';
-import { BookOpen, BarChart3, PlusCircle, Instagram } from 'lucide-react';
+import { BookOpen, BarChart3, PlusCircle, Instagram, Lock, ShieldCheck, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   currentTab: ViewTab;
@@ -8,6 +8,9 @@ interface HeaderProps {
   recordCount: number;
   instagramProfile?: InstagramProfile;
   onOpenInstagramModal: () => void;
+  isAdmin: boolean;
+  onOpenAdminAuth: () => void;
+  onLogoutAdmin: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -16,6 +19,9 @@ export const Header: React.FC<HeaderProps> = ({
   recordCount,
   instagramProfile,
   onOpenInstagramModal,
+  isAdmin,
+  onOpenAdminAuth,
+  onLogoutAdmin,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E5E2DD] transition-all">
@@ -47,6 +53,30 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Navigation & Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           
+          {/* Admin Mode Badge & Toggle */}
+          {isAdmin ? (
+            <div className="hidden md:flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>관리자 모드</span>
+              <button
+                onClick={onLogoutAdmin}
+                className="p-1 hover:bg-emerald-100 rounded-full text-emerald-700 hover:text-emerald-900 transition-colors"
+                title="관리자 로그아웃 (방문자 모드로 전환)"
+              >
+                <LogOut className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onOpenAdminAuth}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0EFED] hover:bg-[#E5E2DD] text-[#1A1A1A]/70 hover:text-[#1A1A1A] text-[11px] font-semibold border border-[#E5E2DD] transition-colors"
+              title="관리자 인증 (산책 기록 및 아카이브 관리 권한)"
+            >
+              <Lock className="w-3 h-3 text-[#1A1A1A]/50" />
+              <span>관리자 로그인</span>
+            </button>
+          )}
+
           {/* Instagram Account Connection Chip */}
           <button
             onClick={onOpenInstagramModal}
@@ -95,14 +125,25 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Quick Record CTA */}
             <button
-              onClick={() => onTabChange('record')}
+              onClick={() => {
+                if (!isAdmin) {
+                  onOpenAdminAuth();
+                } else {
+                  onTabChange('record');
+                }
+              }}
               className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all ${
                 currentTab === 'record'
                   ? 'bg-[#1A1A1A] text-white ring-2 ring-[#1A1A1A]/20'
                   : 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-xs active:scale-[0.98]'
               }`}
+              title={isAdmin ? "새로운 산책 기록 작성" : "산책 기록 (관리자 전용)"}
             >
-              <PlusCircle className="w-3.5 h-3.5" />
+              {isAdmin ? (
+                <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Lock className="w-3 h-3 text-white/70" />
+              )}
               <span>산책 기록</span>
             </button>
           </nav>

@@ -25,13 +25,19 @@ import { SpatialLanguageReport } from './components/SpatialLanguageReport';
 import { InstagramConnectModal } from './components/InstagramConnectModal';
 import { PhotoManagerModal } from './components/PhotoManagerModal';
 import { InstagramPostImporterModal } from './components/InstagramPostImporterModal';
+import { AdminAuthModal, checkIsAdmin, setAdminStatus } from './components/AdminAuthModal';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, Lock, ShieldCheck, ArrowRight, BookOpen } from 'lucide-react';
 
 export default function App() {
   const [records, setRecords] = useState<WalkRecord[]>([]);
   const [currentTab, setCurrentTab] = useState<ViewTab>('archive');
   
+  // Admin Authentication State
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => checkIsAdmin());
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
+  const [pendingAdminAction, setPendingAdminAction] = useState<(() => void) | null>(null);
+
   // Instagram Connected Profile State
   const [instagramProfile, setInstagramProfile] = useState<InstagramProfile>(() => {
     const saved = localStorage.getItem('sanchaek_instagram_profile');
@@ -97,6 +103,35 @@ export default function App() {
     setTimeout(() => {
       setToastMessage(null);
     }, 3000);
+  };
+
+  // Open Admin Auth modal with optional callback
+  const handleOpenAdminAuth = (action?: () => void) => {
+    if (action) {
+      setPendingAdminAction(() => action);
+    } else {
+      setPendingAdminAction(null);
+    }
+    setIsAdminModalOpen(true);
+  };
+
+  // Admin login success
+  const handleAdminLoginSuccess = () => {
+    setIsAdmin(true);
+    if (pendingAdminAction) {
+      pendingAdminAction();
+      setPendingAdminAction(null);
+    }
+  };
+
+  // Admin logout
+  const handleAdminLogout = () => {
+    setAdminStatus(false);
+    setIsAdmin(false);
+    if (currentTab === 'record') {
+      setCurrentTab('archive');
+    }
+    showToast('관리자 로그아웃되었습니다. (방문자 모드로 전환)');
   };
 
   // Step 1: Submit photo & memo to AI API
@@ -340,6 +375,13 @@ export default function App() {
       <Header
         currentTab={currentTab}
         onTabChange={(tab) => {
+          if (tab === 'record' && !isAdmin) {
+            handleOpenAdminAuth(() => {
+              setCurrentTab('record');
+              setCreationStep(1);
+            });
+            return;
+          }
           setCurrentTab(tab);
           if (tab === 'record') {
             setCreationStep(1);
@@ -348,36 +390,88 @@ export default function App() {
         recordCount={records.length}
         instagramProfile={instagramProfile}
         onOpenInstagramModal={() => setIsInstagramModalOpen(true)}
+        isAdmin={isAdmin}
+        onOpenAdminAuth={() => handleOpenAdminAuth()}
+        onLogoutAdmin={handleAdminLogout}
       />
 
       {/* Main App View Switcher */}
       <main className="flex-1 pb-16">
         {currentTab === 'record' && (
           <div>
-            {creationStep === 1 && (
-              <WalkForm onAnalyze={handleAnalyzeWalk} isLoading={isLoadingAI} />
-            )}
+            {!isAdmin ? (
+              <div className="max-w-xl mx-auto px-4 py-16 text-center">
+                <div className="bg-white rounded-3xl p-8 sm:p-10 border border-[#E5E2DD] shadow-lg space-y-6">
+                  <div className="w-16 h-16 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center mx-auto shadow-md">
+                    <Lock className="w-7 h-7 text-emerald-400" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#1A1A1A]/50">
+                      Administrator Only
+                    </span>
+                    <h3 className="font-serif-kr text-2xl font-normal text-[#1A1A1A]">
+                      산책 기록은 관리자 전용입니다
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#1A1A1A]/60 leading-relaxed max-w-md mx-auto font-serif-kr">
+                      공간 디자이너의 일상 산책과 건축적 영감을 기록하고 9:16 인스타그램 스토리를 제작하는 기능은 계정 관리자(@duweon_choo)만 접근할 수 있습니다.
+                    </p>
+                  </div>
 
-            {creationStep === 2 && currentDraft.spatialAnalysis && (
-              <AIAnalysisResult
-                analysis={currentDraft.spatialAnalysis}
-                image={currentDraft.image || ''}
-                location={currentDraft.location || ''}
-                date={currentDraft.date || ''}
-                userNote={currentDraft.note || ''}
-                onProceedToStory={handleProceedToStory}
-                onBack={() => setCreationStep(1)}
-              />
-            )}
+                  <div className="p-4 rounded-2xl bg-[#F9F8F6] border border-[#E5E2DD] text-xs text-[#1A1A1A]/70 flex items-center justify-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>관리자 비밀번호를 인증하시면 기록을 작성할 수 있습니다.</span>
+                  </div>
 
-            {creationStep === 3 && currentDraft.spatialAnalysis && (
-              <StoryVisualStudio
-                initialRecord={currentDraft as WalkRecord}
-                onSaveRecord={handleSaveRecord}
-                onBack={() => setCreationStep(2)}
-                instagramProfile={instagramProfile}
-                onOpenInstagramModal={() => setIsInstagramModalOpen(true)}
-              />
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                    <button
+                      onClick={() => handleOpenAdminAuth(() => {
+                        setCurrentTab('record');
+                        setCreationStep(1);
+                      })}
+                      className="px-6 py-3 rounded-full bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-bold tracking-wider flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98]"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>관리자 인증하기</span>
+                    </button>
+                    <button
+                      onClick={() => setCurrentTab('archive')}
+                      className="px-6 py-3 rounded-full bg-[#F0EFED] hover:bg-[#E5E2DD] text-[#1A1A1A] text-xs font-bold tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>아카이브 둘러보기</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {creationStep === 1 && (
+                  <WalkForm onAnalyze={handleAnalyzeWalk} isLoading={isLoadingAI} />
+                )}
+
+                {creationStep === 2 && currentDraft.spatialAnalysis && (
+                  <AIAnalysisResult
+                    analysis={currentDraft.spatialAnalysis}
+                    image={currentDraft.image || ''}
+                    location={currentDraft.location || ''}
+                    date={currentDraft.date || ''}
+                    userNote={currentDraft.note || ''}
+                    onProceedToStory={handleProceedToStory}
+                    onBack={() => setCreationStep(1)}
+                  />
+                )}
+
+                {creationStep === 3 && currentDraft.spatialAnalysis && (
+                  <StoryVisualStudio
+                    initialRecord={currentDraft as WalkRecord}
+                    onSaveRecord={handleSaveRecord}
+                    onBack={() => setCreationStep(2)}
+                    instagramProfile={instagramProfile}
+                    onOpenInstagramModal={() => setIsInstagramModalOpen(true)}
+                  />
+                )}
+              </>
             )}
           </div>
         )}
@@ -388,14 +482,35 @@ export default function App() {
             onSelectRecord={(rec) => setSelectedDetailRecord(rec)}
             onOpenReactionModal={(rec) => setReactionModalRecord(rec)}
             onStartNewWalk={() => {
-              setCreationStep(1);
-              setCurrentTab('record');
+              if (!isAdmin) {
+                handleOpenAdminAuth(() => {
+                  setCreationStep(1);
+                  setCurrentTab('record');
+                });
+              } else {
+                setCreationStep(1);
+                setCurrentTab('record');
+              }
             }}
             instagramProfile={instagramProfile}
             onOpenInstagramModal={() => setIsInstagramModalOpen(true)}
             onSyncLatestMonthStories={handleSyncLatestMonthStories}
-            onOpenPhotoManager={() => setIsPhotoManagerOpen(true)}
-            onOpenPostImporter={() => setIsPostImporterOpen(true)}
+            onOpenPhotoManager={() => {
+              if (!isAdmin) {
+                handleOpenAdminAuth(() => setIsPhotoManagerOpen(true));
+              } else {
+                setIsPhotoManagerOpen(true);
+              }
+            }}
+            onOpenPostImporter={() => {
+              if (!isAdmin) {
+                handleOpenAdminAuth(() => setIsPostImporterOpen(true));
+              } else {
+                setIsPostImporterOpen(true);
+              }
+            }}
+            isAdmin={isAdmin}
+            onOpenAdminAuth={() => handleOpenAdminAuth()}
           />
         )}
 
@@ -406,8 +521,15 @@ export default function App() {
               setCurrentTab('archive');
             }}
             onStartNewWalk={() => {
-              setCreationStep(1);
-              setCurrentTab('record');
+              if (!isAdmin) {
+                handleOpenAdminAuth(() => {
+                  setCreationStep(1);
+                  setCurrentTab('record');
+                });
+              } else {
+                setCreationStep(1);
+                setCurrentTab('record');
+              }
             }}
             instagramProfile={instagramProfile}
           />
@@ -425,6 +547,8 @@ export default function App() {
           onDeleteRecord={handleDeleteRecord}
           instagramProfile={instagramProfile}
           onUpdateRecordPhoto={handleUpdateRecordPhoto}
+          isAdmin={isAdmin}
+          onOpenAdminAuth={() => handleOpenAdminAuth()}
         />
       )}
 
@@ -470,6 +594,17 @@ export default function App() {
           instagramProfile={instagramProfile}
         />
       )}
+
+      {/* Admin Authentication Modal */}
+      <AdminAuthModal
+        isOpen={isAdminModalOpen}
+        onClose={() => {
+          setIsAdminModalOpen(false);
+          setPendingAdminAction(null);
+        }}
+        onSuccess={handleAdminLoginSuccess}
+        onShowToast={showToast}
+      />
 
       {/* Subtle Footer */}
       <footer className="border-t border-[#E5E2DD] py-8 text-center text-xs text-[#1A1A1A]/40 bg-white">

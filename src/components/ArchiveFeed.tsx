@@ -12,7 +12,8 @@ import {
   Calendar,
   RefreshCw,
   Upload,
-  Camera
+  Camera,
+  Lock
 } from 'lucide-react';
 
 interface ArchiveFeedProps {
@@ -25,6 +26,8 @@ interface ArchiveFeedProps {
   onSyncLatestMonthStories?: () => void;
   onOpenPhotoManager?: () => void;
   onOpenPostImporter?: () => void;
+  isAdmin?: boolean;
+  onOpenAdminAuth?: () => void;
 }
 
 const COMMON_KEYWORD_FILTERS = [
@@ -63,11 +66,21 @@ export const ArchiveFeed: React.FC<ArchiveFeedProps> = ({
   onSyncLatestMonthStories,
   onOpenPhotoManager,
   onOpenPostImporter,
+  isAdmin = false,
+  onOpenAdminAuth,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedKeyword, setSelectedKeyword] = useState<string>('전체');
   const [selectedReactionType, setSelectedReactionType] = useState<ReactionType | 'all'>('all');
   const [sortBy, setSortBy] = useState<'latest' | 'oldest'>('latest');
+
+  const handleAdminAction = (action: () => void) => {
+    if (!isAdmin && onOpenAdminAuth) {
+      onOpenAdminAuth();
+    } else {
+      action();
+    }
+  };
 
   // Filtered and sorted records
   const filteredRecords = useMemo(() => {
@@ -150,31 +163,44 @@ export const ArchiveFeed: React.FC<ArchiveFeedProps> = ({
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {onOpenPostImporter && (
             <button
-              onClick={onOpenPostImporter}
+              onClick={() => handleAdminAction(onOpenPostImporter)}
               className="px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs hover:opacity-90 transition-all active:scale-[0.98]"
-              title="인스타그램 실제 게시물 링크로 가져오기"
+              title={isAdmin ? "인스타그램 실제 게시물 링크로 가져오기" : "인스타 게시물 가져오기 (관리자 전용)"}
             >
-              <Instagram className="w-3.5 h-3.5" />
+              {isAdmin ? (
+                <Instagram className="w-3.5 h-3.5" />
+              ) : (
+                <Lock className="w-3 h-3 text-white/80" />
+              )}
               <span>인스타 게시물 가져오기</span>
             </button>
           )}
 
           {onOpenPhotoManager && (
             <button
-              onClick={onOpenPhotoManager}
+              onClick={() => handleAdminAction(onOpenPhotoManager)}
               className="px-4 py-2.5 rounded-full bg-white hover:bg-[#F0EFED] text-[#1A1A1A] font-semibold text-xs flex items-center gap-1.5 border border-[#E5E2DD] transition-all shadow-xs"
-              title="실제 인스타 사진으로 교체하기"
+              title={isAdmin ? "실제 인스타 사진으로 교체하기" : "실제 사진 교체 (관리자 전용)"}
             >
-              <Upload className="w-3.5 h-3.5 text-[#1A1A1A]" />
+              {isAdmin ? (
+                <Upload className="w-3.5 h-3.5 text-[#1A1A1A]" />
+              ) : (
+                <Lock className="w-3 h-3 text-[#1A1A1A]/60" />
+              )}
               <span>실제 사진 교체</span>
             </button>
           )}
 
           <button
-            onClick={onStartNewWalk}
+            onClick={() => handleAdminAction(onStartNewWalk)}
             className="px-5 py-2.5 rounded-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-bold text-xs tracking-wider flex items-center gap-2 shadow-xs transition-all active:scale-[0.98] shrink-0"
+            title={isAdmin ? "새로운 산책 기록 작성" : "새로운 산책 기록 (관리자 전용)"}
           >
-            <Plus className="w-3.5 h-3.5" />
+            {isAdmin ? (
+              <Plus className="w-3.5 h-3.5" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            )}
             <span>새로운 산책 기록</span>
           </button>
         </div>

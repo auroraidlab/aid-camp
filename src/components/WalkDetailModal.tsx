@@ -26,6 +26,8 @@ interface WalkDetailModalProps {
   onDeleteRecord: (id: string) => void;
   instagramProfile?: InstagramProfile;
   onUpdateRecordPhoto?: (recordId: string, newImageUrl: string) => void;
+  isAdmin?: boolean;
+  onOpenAdminAuth?: () => void;
 }
 
 export const WalkDetailModal: React.FC<WalkDetailModalProps> = ({
@@ -35,6 +37,8 @@ export const WalkDetailModal: React.FC<WalkDetailModalProps> = ({
   onDeleteRecord,
   instagramProfile,
   onUpdateRecordPhoto,
+  isAdmin = false,
+  onOpenAdminAuth,
 }) => {
   const [viewMode, setViewMode] = useState<'story' | 'instagram'>('story');
   const [hasCopied, setHasCopied] = useState<boolean>(false);
@@ -55,6 +59,22 @@ export const WalkDetailModal: React.FC<WalkDetailModalProps> = ({
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    if (!isAdmin && onOpenAdminAuth) {
+      onOpenAdminAuth();
+    } else {
+      onDeleteRecord(record.id);
+    }
+  };
+
+  const handlePhotoUploadClick = () => {
+    if (!isAdmin && onOpenAdminAuth) {
+      onOpenAdminAuth();
+    } else {
+      fileInputRef.current?.click();
     }
   };
 
@@ -164,9 +184,9 @@ ${hashtags} #산책의시선 #공간영감 #스토리아카이브 #duweon_choo`;
             </a>
 
             <button
-              onClick={() => onDeleteRecord(record.id)}
+              onClick={handleDeleteClick}
               className="text-[#1A1A1A]/40 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors"
-              title="기록 삭제"
+              title={isAdmin ? "기록 삭제" : "기록 삭제 (관리자 전용)"}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -223,8 +243,9 @@ ${hashtags} #산책의시선 #공간영감 #스토리아카이브 #duweon_choo`;
                   {onUpdateRecordPhoto && (
                     <div className="w-full max-w-[280px] mt-2.5">
                       <button
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={handlePhotoUploadClick}
                         className="w-full py-2 px-3 rounded-full bg-[#F0EFED] hover:bg-[#E5E2DD] text-[#1A1A1A] text-xs font-medium flex items-center justify-center gap-1.5 border border-[#E5E2DD] transition-colors"
+                        title={isAdmin ? "실제 인스타 사진으로 교체하기" : "사진 교체 (관리자 전용)"}
                       >
                         <Instagram className="w-3 h-3 text-[#1A1A1A]/70" />
                         <span>실제 인스타 사진으로 교체하기</span>
